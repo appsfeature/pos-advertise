@@ -43,7 +43,7 @@ class ScreenSaverFragment : POSBaseFragment() {
                 override fun onItemClicked(view: View?, item: AdvertiseModel?) {
                     view?.let {
                         if(!TextUtils.isEmpty(it.tag.toString())){
-                            POSAdvertise.mListener?.onScreenSaverItemClicked(view.context, item)
+                            POSAdvertise.onScreenSaverItemClicked(view.context, item)
                         }
                     }
                     activity?.finish()

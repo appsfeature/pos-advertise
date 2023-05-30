@@ -49,7 +49,7 @@ class FragmentBanner : POSBaseFragment() {
             initUi(lifecycle, object : POSAdvertiseCallback.OnClickListener {
                 override fun onItemClicked(view: View?, item: AdvertiseModel?) {
                     if(isActionPerformed) {
-                        POSAdvertise.mListener?.onBannerItemClicked(view?.context, item)
+                        POSAdvertise.onBannerItemClicked(view?.context, item)
                     }
                 }
             })

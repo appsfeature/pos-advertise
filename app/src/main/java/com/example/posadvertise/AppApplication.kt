@@ -3,10 +3,16 @@ package com.example.posadvertise
 import android.content.Context
 import com.formbuilder.FormBuilder
 import com.formbuilder.interfaces.FormResponse
+import com.formbuilder.model.FBNetworkModel
+import com.formbuilder.model.FormBuilderModel
 import com.formbuilder.util.FBUtility
 import com.posadvertise.banner.logBanner
 import com.posadvertise.util.POSAdvertiseUtility
 import com.posadvertise.util.common.AdvertiseModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class AppApplication : TrackingApplication() {
 
@@ -33,7 +39,20 @@ class AppApplication : TrackingApplication() {
 
     private fun initAppLibs() {
         FormBuilder.getInstance()
-            .setAppVersion(BuildConfig.VERSION_NAME)
+            .setAppVersionCode(this, BuildConfig.VERSION_CODE)
+            .onFormSubmit(object : FormResponse.Form{
+                override fun onFormSubmit(
+                    formData: FormBuilderModel?,
+                    gsonData: String?,
+                    callback: FormResponse.Callback<FBNetworkModel>?
+                ) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        delay(2000)
+                        callback?.onSuccess(FBNetworkModel(true));
+                    }
+                }
+
+            })
             .setDebugModeEnabled(BuildConfig.DEBUG);
     }
 
@@ -46,8 +65,8 @@ class AppApplication : TrackingApplication() {
             when (it.actionType) {
                 ActionType.FORM.value -> {
                     FormBuilder.getInstance().openDynamicFormActivity(this, it.id, it.actionText, object : FormResponse.FormSubmitListener{
-                        override fun onFormSubmitted(data: String?) {
-                            logBanner(data)
+                        override fun onFormSubmitted(status: Boolean?) {
+                            logBanner("onFormSubmitted")
                         }
                     })
                 }

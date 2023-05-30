@@ -79,10 +79,15 @@ abstract class POSAdvertiseApplication : Application(), POSAdvertiseCallback.OnA
                 posBanner = getPOSBanner()
                 posScreenSaver = getPOSScreenSaver()
                 posTutorials = getPOSTutorial()
-                mListener = this@POSAdvertiseApplication
+                addListener(this@POSAdvertiseApplication.hashCode(), this@POSAdvertiseApplication)
             }
         }
         return posAdvertise!!
+    }
+
+    override fun onTerminate() {
+        super.onTerminate()
+        getPosAdvertise().removeListener(this@POSAdvertiseApplication.hashCode())
     }
 
     private fun getPOSBanner(): POSBanner {

@@ -20,6 +20,7 @@ import com.posadvertise.tutorials.view.TutorialsActivity
 import com.posadvertise.util.POSAdvertiseDataManager
 import com.posadvertise.util.POSAdvertisePreference
 import com.posadvertise.util.POSAdvertiseUtility
+import com.posadvertise.util.common.AdvertiseModel
 import com.posadvertise.util.common.ExtraProperty
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,7 +46,6 @@ object POSAdvertise {
     var posScreenSaver: POSScreenSaver? = null
     var posBanner : POSBanner? = null
     var posTutorials : POSTutorials? = null
-    var mListener : POSAdvertiseCallback.OnAdvertiseListener? = null
 
     fun showBanner(activity: Activity, container: Int) {
         val property = ExtraProperty(bannerType = BannerType.Both)
@@ -184,11 +184,67 @@ object POSAdvertise {
         }
     }
 
+
+    private val mListenerCallbacks = HashMap<Int, POSAdvertiseCallback.OnAdvertiseListener>()
+
+    fun addListener(hashCode: Int, callback: POSAdvertiseCallback.OnAdvertiseListener) {
+        synchronized(mListenerCallbacks) { mListenerCallbacks.put(hashCode, callback) }
+    }
+
+    fun removeListener(hashCode: Int) {
+        if (mListenerCallbacks[hashCode] != null) {
+            synchronized(mListenerCallbacks) { mListenerCallbacks.remove(hashCode) }
+        }
+    }
+
+    fun onDownloadCompletedUpdateUi() {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                if (mListenerCallbacks.size > 0) {
+                    mListenerCallbacks.forEach { (_, v) ->
+                        logAdv("onDownloadCompletedUpdateUi()")
+                        v.onDownloadCompletedUpdateUi()
+                    }
+                }
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+    fun onBannerItemClicked(context: Context?, item: AdvertiseModel?) {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                if (mListenerCallbacks.size > 0) {
+                    mListenerCallbacks.forEach { (_, v) ->
+                        logAdv("onBannerItemClicked()")
+                        v.onBannerItemClicked(context, item)
+                    }
+                }
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+    fun onScreenSaverItemClicked(context: Context?, item: AdvertiseModel?) {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                if (mListenerCallbacks.size > 0) {
+                    mListenerCallbacks.forEach { (_, v) ->
+                        logAdv("onScreenSaverItemClicked()")
+                        v.onScreenSaverItemClicked(context, item)
+                    }
+                }
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     fun downloadFileFromServer(context: Context, downloadFileUrl : String, callback: POSAdvertiseCallback.Download<Boolean>) {
         POSAdvertiseDataManager.downloadUpdate(context, downloadFileUrl, object : POSAdvertiseCallback.Download<Boolean> {
             override fun onSuccess(response: Boolean) {
                 logAdv("syncPOSAdvertise: onSuccess")
-                mListener?.onDownloadCompletedUpdateUi()
+                onDownloadCompletedUpdateUi()
                 callback.onSuccess(true)
             }
 
@@ -198,7 +254,7 @@ object POSAdvertise {
 
             override fun onFailure(e: Exception?) {
                 super.onFailure(e)
-                mListener?.onDownloadCompletedUpdateUi()
+                onDownloadCompletedUpdateUi()
                 callback.onFailure(e)
                 logAdv("syncPOSAdvertise: onFailure")
             }
