@@ -78,7 +78,25 @@ class AppApplication : POSAdvertiseApplication() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        getPosAdvertise().httpsTutorialUrl = fileUrlTutorials
+        getPosAdvertise()
+            .setTerminalName("X990")
+            .httpsTutorialUrl = fileUrlTutorials
+        FormBuilder.getInstance()
+            .setAppVersionCode(this, BuildConfig.VERSION_CODE)
+            .setAdvertiseVersionCode(this, POSAdvertise.getAdvertiseVersionCode(this))
+            .onFormSubmit { formData, gsonData, callback ->
+                if (!gsonData.isNullOrEmpty()) {
+                    HitServerRequestManager.syncDynamicFormData(formData, gsonData, object : HitServerRequestManager.Callback<String> {
+                        override fun onSuccess(response: String) {
+                            callback?.onSuccess(FBNetworkModel(true));
+                        }
+
+                        override fun onFailure(e: Exception?) {
+                            callback?.onFailure(e)
+                        }
+                    })
+                }
+            }.isDebugModeEnabled = BuildConfig.DEBUG;
     }
 
     override fun onBannerItemClicked(context: Context?, item: AdvertiseModel?) {
@@ -93,12 +111,12 @@ class AppApplication : POSAdvertiseApplication() {
 
 ### ScreenSaver usage methods
 ```kotlin
-class MainActivity : AppCompatActivity() { 
+class MainActivity : AppCompatActivity() , POSAdvertiseCallback.OnAdvertiseListener{ 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        //use this code before super.onCreate method.
-        AppApplication.instance.registerScreenSaver(this)
         super.onCreate(savedInstanceState)
+        //Start screen saver for current activity or fragment
+        POSScreenSaver.startScreenSaver(this)
         
         //Download Zip file from https server
         downloadFiles(AppApplication.fileUrlAll)
@@ -124,9 +142,25 @@ class MainActivity : AppCompatActivity() {
         })
     }
     
-    override fun onDestroy() {
-        super.onDestroy()
-        AppApplication.instance.unregisterPosAdvertise()
+    override fun onStop() {
+        super.onStop()
+        Log.d("@Test", "onStop")
+        POSAdvertise.removeListener(this@MainActivity.hashCode())
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d("@Test", "onStart")
+        POSAdvertise.addListener(this@MainActivity.hashCode(), this)
+    }
+
+    override fun onBannerItemClicked(context: Context?, item: AdvertiseModel?) {
+    }
+
+    override fun onScreenSaverItemClicked(context: Context?, item: AdvertiseModel?) {
+    }
+
+    override fun onDownloadCompletedUpdateUi() {
     }
 }
 ```
