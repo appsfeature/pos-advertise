@@ -17,4 +17,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "pos-advertise"
 include ':app'
+//include ':posadvertise'
 include ':posadvertise'

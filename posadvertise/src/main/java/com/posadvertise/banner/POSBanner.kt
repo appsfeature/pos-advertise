@@ -3,6 +3,7 @@ package com.posadvertise.banner
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -14,6 +15,8 @@ import com.posadvertise.banner.views.FragmentBanner
 import com.posadvertise.util.POSAdvertiseUtility
 import com.posadvertise.util.common.AdvertiseModel
 import com.posadvertise.util.common.ExtraProperty
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -25,7 +28,7 @@ fun logBanner(message: String?){
 
 object POSBanner {
 
-    const val BannerAttachDelayTime : Long = 3 * 1000
+    const val BannerAttachDelayTime : Long = 0
 
     var mProperty: BannerProperty? = null
     private var propertyLocal: BannerProperty? = null
@@ -68,8 +71,12 @@ object POSBanner {
 
     fun show(fragment: Fragment, container: Int, property: ExtraProperty) {
         if(isValidBanners(property.viewType, property.bannerType)) {
+//            val mView = fragment.view?.findViewById<FrameLayout>(container)
+//            CoroutineScope(Dispatchers.Main).launch {
+//                mView?.removeAllViews()
+//            }
             fragment.lifecycleScope.launch {
-                delay(getBannerAttachDelayTime(property.bannerType))
+//                delay(getBannerAttachDelayTime(property.bannerType))
                 //Start Task
                 mapFragment(fragment, property, container)
                 logBanner("isValidBanners : true")
@@ -89,7 +96,7 @@ object POSBanner {
 
     private fun getBannerAttachDelayTime(bannerType: BannerType): Long {
         getProperty(bannerType)?.let {
-            return it.getBannerAttachDelayTime()
+            return it.bannerAttachDelayTime
         }
         return BannerAttachDelayTime
     }
@@ -97,6 +104,10 @@ object POSBanner {
     private fun isValidDate(startDate : String?, endDate : String?): Boolean {
         return (System.currentTimeMillis() > POSAdvertiseUtility.getTimeInMillis(startDate)
                 && System.currentTimeMillis() < POSAdvertiseUtility.getTimeInMillis(endDate))
+    }
+
+    fun isValidBannersForHome(): Boolean {
+        return isValidBanners(BannerViewType.HOME, BannerType.Both)
     }
 
     private fun isValidBanners(type: BannerViewType, bannerType: BannerType): Boolean {

@@ -14,6 +14,7 @@ import java.io.InputStream
 const val CONFIG_BANNER_JSON = "config_banner.json"
 const val CONFIG_SCREEN_SAVER_JSON = "config_screen_saver.json"
 const val CONFIG_TUTORIAL_JSON = "config_tutorial.json"
+const val CONFIG_JSON = "config.json"
 
 class POSFileManager {
 

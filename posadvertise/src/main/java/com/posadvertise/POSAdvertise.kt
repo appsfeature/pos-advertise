@@ -5,10 +5,11 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.helper.util.BaseConstants
 import com.posadvertise.POSAdvertiseCallback.OnAdvertiseUpdate
 import com.posadvertise.banner.POSBanner
@@ -40,12 +41,22 @@ fun logAdv(tag: String, message: String){
 
 object POSAdvertise {
 
+    private var mTerminalName: String = "X990"
     var isScreenSaverFreeze: Boolean = false
     var httpsTutorialUrl: String? = null
     var isDebugMode: Boolean = false
     var posScreenSaver: POSScreenSaver? = null
     var posBanner : POSBanner? = null
     var posTutorials : POSTutorials? = null
+
+
+    fun getAdvertiseVersionCode(context: Context?): Int {
+        return POSAdvertisePreference.getAdvertiseVersionCode(context)
+    }
+
+//    fun setAdvertiseVersionCode(context: Context?, value: Int) {
+//        POSAdvertisePreference.setAdvertiseVersionCode(context, value)
+//    }
 
     fun showBanner(activity: Activity, container: Int) {
         val property = ExtraProperty(bannerType = BannerType.Both)
@@ -62,7 +73,7 @@ object POSAdvertise {
     }
 
     fun showBannerOnHomeScreen(fragment: Fragment, container: Int) {
-        val property = ExtraProperty(isActionPerformed = true, bannerType = BannerType.Both, viewType = BannerViewType.HOME)
+        val property = ExtraProperty(isActionPerformed = true, bannerType = BannerType.Both, viewType = BannerViewType.HOME, isBannerIndicatorTop = true)
         addLiveChangeListener(fragment, object : OnAdvertiseUpdate{
             override fun onUIUpdate() {
                 posBanner?.show(fragment, container, property)
@@ -79,8 +90,8 @@ object POSAdvertise {
         })
     }
 
-    fun showBannerOnPinEntry(fragment: Fragment, container: Int) {
-        val property = ExtraProperty(isActionPerformed = false, bannerType = BannerType.Both, viewType = BannerViewType.PIN_ENTRY)
+    fun showBannerOnEmiSale(fragment: Fragment, container: Int) {
+        val property = ExtraProperty(isActionPerformed = false, bannerType = BannerType.Both, viewType = BannerViewType.EMI_SALE)
         addLiveChangeListener(fragment, object : OnAdvertiseUpdate{
             override fun onUIUpdate() {
                 posBanner?.show(fragment, container, property)
@@ -88,8 +99,13 @@ object POSAdvertise {
         })
     }
 
-    fun showBannerOnAmtEntryScreen(fragment: Fragment, container: Int) {
-        val property = ExtraProperty(isActionPerformed = false, bannerType = BannerType.Both, viewType = BannerViewType.AMT_ENTRY)
+    fun showBannerOnBrandEmi(activity: Activity, container: Int) {
+        val property = ExtraProperty(isActionPerformed = false, bannerType = BannerType.Both, viewType = BannerViewType.BRAND_EMI)
+        posBanner?.show(activity, container, property)
+    }
+
+    fun showBannerOnDynamicQR(fragment: Fragment, container: Int) {
+        val property = ExtraProperty(isActionPerformed = false, bannerType = BannerType.Both, viewType = BannerViewType.DYNAMIC_QR)
         addLiveChangeListener(fragment, object : OnAdvertiseUpdate{
             override fun onUIUpdate() {
                 posBanner?.show(fragment, container, property)
@@ -130,6 +146,28 @@ object POSAdvertise {
             .putExtra(BaseConstants.TITLE, title))
     }
 
+//    fun openTutorialFragmentById(activity: Activity, title: String, videoId : Int) {
+//        val property = ExtraProperty().apply {
+//            this.title = title
+//            this.model = POSTutorials.getVideoById(videoId)
+//        }
+//        if(property.model != null) {
+//            val fragment = TutorialGifFragment().apply {
+//                arguments = POSAdvertiseUtility.getBundle(property)
+//            }
+//            if (activity is AppCompatActivity) {
+//                val trans = activity.supportFragmentManager.beginTransaction().apply {
+//                    add(R.id.content, fragment)
+//                    addToBackStack(fragment.javaClass.simpleName)
+//                }
+//                trans.addToBackStack(null)
+//                trans.commitAllowingStateLoss()
+//            }
+//        }else{
+//            Toast.makeText(activity, "Tutorial not found", Toast.LENGTH_SHORT).show()
+//        }
+//    }
+
     fun openTutorialById(activity: Activity, title: String, videoId : Int) {
         val property = ExtraProperty().apply {
             this.title = title
@@ -139,18 +177,22 @@ object POSAdvertise {
             .putExtra(BaseConstants.EXTRA_PROPERTY, property))
     }
 
-    fun init(application: Application, callback: POSAdvertiseCallback.Callback<Boolean>) {
-        if(!POSAdvertisePreference.isInternalZipFileExtracted(application)){
+    fun init(
+        application: Application,
+        versionCode: Int,
+        callback: POSAdvertiseCallback.Callback<Boolean>
+    ) {
+        if(!POSAdvertisePreference.isInternalZipFileExtracted(application, versionCode)){
             POSAdvertiseDataManager.extractLocalZipFile(application, object : POSAdvertiseCallback.Callback<Boolean>{
                 override fun onSuccess(response: Boolean) {
-                    POSAdvertisePreference.setInternalZipFileExtracted(application, true)
+                    POSAdvertisePreference.setInternalZipFileExtracted(application, versionCode, true)
                     POSScreenSaver.setUserInteractionCallbackIfNotInitialize()
                     callback.onSuccess(response)
                 }
 
                 override fun onFailure(e: Exception?) {
                     super.onFailure(e)
-                    POSAdvertisePreference.setInternalZipFileExtracted(application, true)
+                    POSAdvertisePreference.setInternalZipFileExtracted(application, versionCode, true)
                     callback.onFailure(e)
                 }
             })
@@ -240,9 +282,49 @@ object POSAdvertise {
         }
     }
 
+    var isBannerUpdateInProgress = false
+
+    fun downloadFileFromServer(context: Context, callback: POSAdvertiseCallback.Download<Boolean>) {
+        if(!isBannerUpdateInProgress) {
+            isBannerUpdateInProgress=true
+
+            val isUpdateAvailable = POSAdvertisePreference.isUpdateAvailable(context)
+            val urlData = POSAdvertisePreference.getUpdateUrlData(context)
+            if(isUpdateAvailable && !urlData.isNullOrEmpty()) {
+                val urlDataMap = Gson().fromJson<MutableList<String>>(urlData,
+                    object : TypeToken<MutableList<String>>() {}.type
+                )
+                val baseUrl = urlDataMap[2]
+                val ftpIPPort = urlDataMap[3].toInt()
+                val fileName = urlDataMap[7]
+//              val filesize = urlDataMap[8]
+                val finalUrl = baseUrl.replace("/app/", ":$ftpIPPort") + "/app/${getTerminalName()}/${fileName}"
+                CoroutineScope(Dispatchers.Main).launch {
+                    callback.onProgressStart()
+                }
+
+                downloadFileFromServer(context, finalUrl, callback)
+            }else{
+                isBannerUpdateInProgress = false
+            }
+        }
+
+    }
+
+    fun getTerminalName(): String {
+        return mTerminalName
+    }
+
+    fun setTerminalName(terminalName : String): POSAdvertise {
+        this.mTerminalName = terminalName
+        return this
+    }
+
+
     fun downloadFileFromServer(context: Context, downloadFileUrl : String, callback: POSAdvertiseCallback.Download<Boolean>) {
         POSAdvertiseDataManager.downloadUpdate(context, downloadFileUrl, object : POSAdvertiseCallback.Download<Boolean> {
             override fun onSuccess(response: Boolean) {
+                callback.onProgressEnd()
                 logAdv("syncPOSAdvertise: onSuccess")
                 onDownloadCompletedUpdateUi()
                 callback.onSuccess(true)
@@ -254,6 +336,7 @@ object POSAdvertise {
 
             override fun onFailure(e: Exception?) {
                 super.onFailure(e)
+                callback.onProgressEnd()
                 onDownloadCompletedUpdateUi()
                 callback.onFailure(e)
                 logAdv("syncPOSAdvertise: onFailure")
@@ -272,35 +355,10 @@ object POSAdvertise {
     }
 
     fun startScreenSaverFreeze(activity: Activity) {
-        if(activity is AppCompatActivity){
-            activity.lifecycle.addObserver(object : DefaultLifecycleObserver{
-                override fun onCreate(owner: LifecycleOwner) {
-                    super.onCreate(owner)
-                    isScreenSaverFreeze = true
-                }
-
-                override fun onDestroy(owner: LifecycleOwner) {
-                    super.onDestroy(owner)
-                    activity.lifecycle.removeObserver(this)
-                    isScreenSaverFreeze = false
-                }
-            })
-        }
+        POSScreenSaver.startScreenSaverFreeze(activity)
     }
 
     fun startScreenSaverFreeze(fragment: Fragment) {
-        fragment.lifecycle.addObserver(object : DefaultLifecycleObserver{
-            override fun onCreate(owner: LifecycleOwner) {
-                super.onCreate(owner)
-                isScreenSaverFreeze = true
-            }
-
-            override fun onDestroy(owner: LifecycleOwner) {
-                fragment.lifecycle.removeObserver(this)
-                isScreenSaverFreeze = false
-                POSScreenSaver.resetScreenTimeOutTask(fragment.requireContext())
-                super.onDestroy(owner)
-            }
-        })
+        POSScreenSaver.startScreenSaverFreeze(fragment)
     }
 }

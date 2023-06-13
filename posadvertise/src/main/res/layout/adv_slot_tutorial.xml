@@ -23,8 +23,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Item"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textColor="@color/text_color_menu"
+            android:textSize="18sp"
+            android:fontFamily="@font/roboto_bold" />
 
     </LinearLayout>
 

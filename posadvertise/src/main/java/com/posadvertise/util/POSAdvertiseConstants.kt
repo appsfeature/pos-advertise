@@ -13,6 +13,7 @@ interface POSAdvertiseConstants : BaseConstants{
         const val zipFolderScreenSaver: String = "ScreenSaver"
         const val zipFolderTutorial: String = "Tutorial"
         const val zipFolderUpdate: String = "Update"
+        const val zipFileConfig: String = "config.json"
 
         const val x : Long = 5 * 1000
         const val DefaultScreenTimeOut: Long = 60 * 1000

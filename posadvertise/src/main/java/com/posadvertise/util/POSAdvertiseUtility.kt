@@ -1,10 +1,15 @@
 package com.posadvertise.util
 
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -96,5 +101,47 @@ class POSAdvertiseUtility {
                 Toast.makeText(context, "File not exists", Toast.LENGTH_LONG).show()
             }
         }
+
+        fun showKeyboard(view: View?) {
+            try {
+                if (view != null && view.requestFocus()) {
+                    val imm =
+                        view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm?.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
+                }
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        fun hideKeyboard(activity: Activity?) {
+            try {
+                if (activity != null) {
+                    val imm =
+                        activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    val f = activity.currentFocus
+                    if (f != null && f.windowToken != null && EditText::class.java.isAssignableFrom(f.javaClass)) {
+                        imm.hideSoftInputFromWindow(f.windowToken, 0)
+                    }else {
+                        activity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+                    }
+                }
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        fun hideKeyboard(editText: View?) {
+            try {
+                if (editText != null) {
+                    val imm =
+                        editText.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(editText.windowToken, 0)
+                }
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+        }
+
     }
 }

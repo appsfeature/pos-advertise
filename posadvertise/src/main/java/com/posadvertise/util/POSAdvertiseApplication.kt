@@ -7,13 +7,10 @@ import com.google.gson.Gson
 import com.posadvertise.POSAdvertise
 import com.posadvertise.POSAdvertiseCallback
 import com.posadvertise.banner.POSBanner
-import com.posadvertise.banner.model.BannerProperty
 import com.posadvertise.banner.model.BannerType
 import com.posadvertise.logAdv
 import com.posadvertise.screensaver.POSScreenSaver
-import com.posadvertise.screensaver.model.ScreenSaverProperty
 import com.posadvertise.tutorials.POSTutorials
-import com.posadvertise.tutorials.model.TutorialProperty
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,9 +21,13 @@ abstract class POSAdvertiseApplication : Application(), POSAdvertiseCallback.OnA
 
     abstract fun isDebugMode() : Boolean;
 
+    abstract fun getVersionCode() : Int;
+
     override fun onCreate() {
         super.onCreate()
-        initLibs()
+//        //call this method for re-extract local zip file.
+//        POSAdvertisePreference.setInternalZipFileExtracted(this, false)
+        initLibs(getVersionCode())
 
         if (POSAdvertise.isDebugMode) {
             getTempLocalJson()
@@ -57,9 +58,9 @@ abstract class POSAdvertiseApplication : Application(), POSAdvertiseCallback.OnA
         POSAdvertise.updateUICallback()
     }
 
-    private fun initLibs(){
+    private fun initLibs(versionCode: Int) {
         getPosAdvertise()
-            .init(this, object : POSAdvertiseCallback.Callback<Boolean>{
+            .init(this, versionCode, object : POSAdvertiseCallback.Callback<Boolean>{
                 override fun onSuccess(response: Boolean) {
                     logAdv("initLocalZipFileExtraction: onSuccess")
                     POSAdvertise.updateUICallback()
@@ -110,11 +111,11 @@ abstract class POSAdvertiseApplication : Application(), POSAdvertiseCallback.OnA
     }
 
     fun registerScreenSaver(context: Context) {
-        getPosAdvertise().registerScreenSaver(context)
+//        getPosAdvertise().registerScreenSaver(context)
     }
 
     fun unregisterPosAdvertise() {
-        getPosAdvertise().unregisterScreenSaver()
+//        getPosAdvertise().unregisterScreenSaver()
     }
 
 }

@@ -5,6 +5,7 @@ import com.helper.util.FileUtils
 import com.helper.util.UnzipUtils
 import com.posadvertise.POSAdvertise
 import com.posadvertise.POSAdvertiseCallback
+import com.posadvertise.banner.logBanner
 import com.posadvertise.banner.model.BannerType
 import com.posadvertise.logAdv
 import kotlinx.coroutines.*
@@ -15,11 +16,11 @@ import java.io.IOException
 object POSAdvertiseDataManager {
     fun extractLocalZipFile(context: Context, callback: POSAdvertiseCallback.Callback<Boolean>?) {
         CoroutineScope(Dispatchers.IO).launch {
-            val task = async { extractLocalFiles(context) }
+            val task = async { extractLocalFiles(context, callback) }
             task.await().apply {
                 POSAdvertise.resetPOSAdvertiseProperty(context)
                 if(this) {
-                    callback?.onSuccess(this)
+                    callback?.onSuccess(true)
                 }else{
                     callback?.onFailure(Exception("Invalid Extraction"))
                 }
@@ -27,7 +28,10 @@ object POSAdvertiseDataManager {
         }
     }
 
-    private fun extractLocalFiles(context: Context): Boolean {
+    private fun extractLocalFiles(
+        context: Context,
+        callback: POSAdvertiseCallback.Callback<Boolean>?
+    ): Boolean {
         val fileManager = POSAdvertiseUtility.getStorage()
         val downloadZipFile = File(
             createDirectory(fileManager.getPOSDownloadsFolder(context)),
@@ -36,7 +40,7 @@ object POSAdvertiseDataManager {
         val assetsFile = fileManager.getAssetsFile(context, POSAdvertiseConstants.AdvertiseFileName)
         if(assetsFile != null) {
             FileUtils.saveAssetsToStorage(assetsFile, downloadZipFile)
-            return extractFiles(context, fileManager, true)
+            return extractFiles(context, fileManager, true, callback)
         }else{
             return false
         }
@@ -53,11 +57,11 @@ object POSAdvertiseDataManager {
             object : HTTPSDownloadManager.Callback {
                 override fun onDownloadComplete(path: String, appName: String, fileUri: File?) {
                     CoroutineScope(Dispatchers.IO).launch {
-                        val task = async { extractFiles(context, fileManager, false) }
+                        val task = async { extractFiles(context, fileManager, false, callback) }
                         launch(Dispatchers.Main) {
                             task.await().apply {
                                 POSAdvertise.resetPOSAdvertiseProperty(context)
-                                POSAdvertisePreference.setUpdateDownloaded(context, this)
+                                POSAdvertisePreference.setUpdateAvailable(context, this)
                                 callback?.onSuccess(this)
                             }
                         }
@@ -74,15 +78,18 @@ object POSAdvertiseDataManager {
             }).execute()
     }
 
-    private fun extractFiles(context: Context, fileManager: POSFileManager, isLocal: Boolean): Boolean {
+    private fun extractFiles(
+        context: Context,
+        fileManager: POSFileManager,
+        isLocal: Boolean,
+        callback: POSAdvertiseCallback.Callback<Boolean>?
+    ): Boolean {
         try {
             //existing folder rename
             val downloadsFolder = createDirectory(fileManager.getPOSDownloadsFolder(context))
-            val posAdvertiseFolder = fileManager.getPOSAdvertiseFolder(context)
-            val mFolderRename = File(downloadsFolder, "${POSAdvertiseConstants.AdvertiseFolder}-Old")
-            if(posAdvertiseFolder.exists()){
-                posAdvertiseFolder.renameTo(mFolderRename)
-            }
+            //create POSAdvertise folder for extract files in it.
+            createDirectory(fileManager.getPOSAdvertiseFolder(context))
+
             val downloadZipFile = File(
                 fileManager.getPOSDownloadsFolder(context),
                 POSAdvertiseConstants.AdvertiseFileName
@@ -91,15 +98,12 @@ object POSAdvertiseDataManager {
                 UnzipUtils.unzip(downloadZipFile, downloadsFolder)
                 downloadZipFile.delete()
             }
-            //delete renamed folder
-            if(mFolderRename.exists()){
-                mFolderRename.deleteRecursively()
-            }
             copyFiles(context, fileManager, isLocal)
             readFiles(context, fileManager)
             return true
         } catch (e: Exception) {
             logAdv(e.toString())
+            callback?.onFailure(e)
             return false
         }
     }
@@ -110,9 +114,10 @@ object POSAdvertiseDataManager {
         val folderScreenSaver = createDirectory(fileManager.getPOSScreenSaverFolder(context))
         val folderTutorial = createDirectory(fileManager.getPOSTutorialFolder(context))
         val folderUpdate = createDirectory(fileManager.getPOSUpdateAPKFolder(context))
-        val mainFolder = fileManager.getPOSAdvertiseFolder(context)
-        if(mainFolder.exists()){
-            val folders = mainFolder.listFiles()
+        val mainFolder = fileManager.getFileStoreDirectory(context)
+        val advFolder = fileManager.getPOSAdvertiseFolder(context)
+        if(advFolder.exists()){
+            val folders = advFolder.listFiles()
             folders?.let {
                 for (folder in it){
                     if (equalsString(folder.name, POSAdvertiseConstants.zipFolderBanner)) {
@@ -134,10 +139,13 @@ object POSAdvertiseDataManager {
                     }
                     else if (equalsString(folder.name, POSAdvertiseConstants.zipFolderUpdate)) {
                         copyFiles(folderUpdate, folder.listFiles(), true)
+                    }else if (equalsString(folder.name, POSAdvertiseConstants.zipFileConfig)) {
+                        logBanner("copyFile config.json")
+                        copyFile(mainFolder, folder)
                     }
                 }
             }
-            mainFolder.deleteRecursively()
+            advFolder.deleteRecursively()
         }
     }
 
@@ -153,6 +161,7 @@ object POSAdvertiseDataManager {
             val folderBannerLocal = File(fileManager.getPOSBannerFolder(context, BannerType.Local), CONFIG_BANNER_JSON)
             val folderScreenSaver = File(fileManager.getPOSScreenSaverFolder(context), CONFIG_SCREEN_SAVER_JSON)
             val folderTutorial = File(fileManager.getPOSTutorialFolder(context), CONFIG_TUTORIAL_JSON)
+            val configMainFile = File(fileManager.getFileStoreDirectory(context), CONFIG_JSON)
 
             if(folderBanner.exists()){
                 val configJson = fileManager.readFile(folderBanner)
@@ -170,6 +179,11 @@ object POSAdvertiseDataManager {
                 val configJson = fileManager.readFile(folderTutorial)
                 POSAdvertisePreference.setConfigTutorialJson(context, configJson)
             }
+            if(configMainFile.exists()){
+                val configJson = fileManager.readFile(configMainFile)
+                POSAdvertisePreference.setConfigMainJson(context, configJson)
+            }
+            //9810862622 gayanender
         }
     }
 
@@ -189,13 +203,18 @@ object POSAdvertiseDataManager {
         }
         files?.let {
             for (file in it){
-                val targetFile = File(targetFilePath, file.name)
-                if (targetFile.exists()) {
-                    targetFile.delete()
-                }
-                file.copyRecursively(targetFile, true)
+                copyFile(targetFilePath, file)
             }
         }
+    }
+
+    private fun copyFile(targetFilePath: File, file: File) {
+        val targetFile = File(targetFilePath, file.name)
+        if (targetFile.exists()) {
+            targetFile.delete()
+        }
+        logBanner("copyFile ${file.name}")
+        file.copyRecursively(targetFile, true)
     }
 
 

@@ -1,9 +1,14 @@
 package com.posadvertise.screensaver
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.helper.util.BaseConstants
 import com.posadvertise.POSAdvertise
 import com.posadvertise.POSAdvertiseCallback
@@ -15,6 +20,10 @@ import com.posadvertise.util.POSAdvertiseConstants
 import com.posadvertise.util.POSAdvertiseUtility
 import com.posadvertise.util.common.AdvertiseModel
 import com.posadvertise.util.common.ExtraProperty
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 fun logSS(message: String){
     if(POSAdvertise.isDebugMode) {
@@ -39,7 +48,7 @@ object POSScreenSaver {
             override fun onInActivityFound() {
                 if(isValidScreenSavers()) {
                     timeOutHandler?.removeScreenSaverCallback()
-                    startScreenSaver(context)
+                    startScreenSaverFreeze(context)
                 }
             }
         })
@@ -63,15 +72,19 @@ object POSScreenSaver {
         timeOutHandler?.unregisterScreenSaver()
     }
 
-    fun reSetScreenSaver(context: Context) {
+    fun onStop() {
+    }
+
+    fun resetScreenTimeout(context: Context) {
         initScreenSaver(context)
         timeOutHandler?.resetScreenTimeOutTask(context)
     }
 
-    private fun startScreenSaver(context: Context) {
+    private fun startScreenSaverFreeze(context: Context) {
         val intent = Intent(context, ScreenSaverActivity::class.java)
             .putExtra(BaseConstants.EXTRA_PROPERTY, ExtraProperty())
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent)
     }
 
@@ -130,6 +143,79 @@ object POSScreenSaver {
 
     fun isEnableScreenSaver(): Boolean {
         return property?.isEnableScreenSaver ?: true
+    }
+
+
+    fun startScreenSaverFreeze(activity: Activity) {
+        if(activity is AppCompatActivity){
+            activity.lifecycle.addObserver(object : DefaultLifecycleObserver {
+                override fun onCreate(owner: LifecycleOwner) {
+                    super.onCreate(owner)
+                    POSAdvertise.isScreenSaverFreeze = true
+                }
+
+                override fun onDestroy(owner: LifecycleOwner) {
+                    super.onDestroy(owner)
+                    activity.lifecycle.removeObserver(this)
+                    POSAdvertise.isScreenSaverFreeze = false
+                    resetScreenTimeOutTask(activity)
+                }
+            })
+        }
+    }
+
+    fun startScreenSaverFreeze(fragment: Fragment) {
+        fragment.lifecycle.addObserver(object : DefaultLifecycleObserver {
+
+            override fun onStart(owner: LifecycleOwner) {
+                super.onStart(owner)
+                applyFreeze(fragment.requireContext(), true)
+            }
+
+            override fun onStop(owner: LifecycleOwner) {
+                super.onStop(owner)
+                applyFreeze(fragment.requireContext(), false)
+            }
+
+            override fun onDestroy(owner: LifecycleOwner) {
+                fragment.lifecycle.removeObserver(this)
+                super.onDestroy(owner)
+            }
+        })
+    }
+
+    fun startScreenSaver(fragment: Fragment) {
+        fragment.lifecycle.addObserver(object : DefaultLifecycleObserver {
+
+            override fun onStart(owner: LifecycleOwner) {
+                super.onStart(owner)
+                CoroutineScope(Dispatchers.Main).launch {
+                    delay(400)
+                    applyFreeze(fragment.requireContext(), false)
+                }
+            }
+
+            override fun onStop(owner: LifecycleOwner) {
+                super.onStop(owner)
+                applyFreeze(fragment.requireContext(), true)
+            }
+
+            override fun onDestroy(owner: LifecycleOwner) {
+                fragment.lifecycle.removeObserver(this)
+                super.onDestroy(owner)
+            }
+        })
+    }
+
+    private fun applyFreeze(context: Context, isFreeze: Boolean) {
+        if(isFreeze) {
+            logSS("isScreenSaverFreeze = true")
+            POSAdvertise.isScreenSaverFreeze = true
+        }else{
+            logSS("isScreenSaverFreeze = false")
+            POSAdvertise.isScreenSaverFreeze = false
+            resetScreenTimeOutTask(context)
+        }
     }
 
 }

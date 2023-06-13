@@ -4,7 +4,8 @@ package com.posadvertise.banner.model
 enum class BannerViewType(val value : String){
     ALL("all"),
     HOME("home"),
-    PIN_ENTRY("pinentry"),
+    EMI_SALE("emi_sale"), //BANK EMI
+    BRAND_EMI("brand_emi"),
     VOID("void"),
-    AMT_ENTRY("amtentry")
+    DYNAMIC_QR("dynamic_qr"),
 }

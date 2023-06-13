@@ -32,16 +32,17 @@ interface POSAdvertiseCallback{
         fun onItemClicked(view: View?, item: AdvertiseModel?)
     }
     interface OnAdvertiseActionListener {
-        fun onItemClicked(context: Context?, item: AdvertiseModel?)
+        fun onBannerItemClicked(context: Context?, item: AdvertiseModel?)
+        fun onScreenSaverItemClicked(context: Context?, item: AdvertiseModel?)
     }
     interface OnAdvertiseListener {
         fun onBannerItemClicked(context: Context?, item: AdvertiseModel?)
         fun onScreenSaverItemClicked(context: Context?, item: AdvertiseModel?)
         fun onDownloadCompletedUpdateUi()
     }
-    interface Download<T> {
-        fun onSuccess(response: T)
+    interface Download<T> : Callback<T>{
+        fun onProgressStart(){}
+        fun onProgressEnd(){}
         fun onProgressUpdate(progress : Int){}
-        fun onFailure(e: Exception?) {}
     }
 }

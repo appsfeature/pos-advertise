@@ -160,9 +160,30 @@ class DashboardFragment : Fragment() {
     }
 }
 ```
+### Check Provider Path
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <external-path
+        name="external_files"
+        path="." />
+
+    <external-cache-path
+        name="external_cache_files"
+        path="." />
+
+    <external-path name="external_files" path="."/>
+    <external-path name="external" path="." />
+    <external-files-path name="external_files" path="." />
+    <cache-path name="cache" path="." />
+    <external-cache-path name="external_cache" path="." />
+    <files-path name="files" path="." />
+</paths>
+```
 
 ### Important Notes:
 ```text
     * Add Local Zip file in android assets folder.
            file://assets/POSAdvertise.zip
+    * Check Provider Path.
 ```

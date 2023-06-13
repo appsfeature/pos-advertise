@@ -17,6 +17,7 @@
 <!--            </intent-filter>-->
 <!--        </service>-->
         <activity android:name="com.posadvertise.screensaver.view.ScreenSaverActivity"
+            android:windowSoftInputMode="stateHidden"
             android:theme="@style/Theme.FullScreen"/>
         <activity android:name="com.posadvertise.tutorials.view.TutorialsActivity" />
 

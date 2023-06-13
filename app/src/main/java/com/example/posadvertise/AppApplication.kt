@@ -5,7 +5,8 @@ import com.formbuilder.FormBuilder
 import com.formbuilder.interfaces.FormResponse
 import com.formbuilder.model.FBNetworkModel
 import com.formbuilder.model.FormBuilderModel
-import com.formbuilder.util.FBUtility
+import com.formbuilder.model.entity.PopupEntity
+import com.formbuilder.util.FBAlertUtil
 import com.posadvertise.banner.logBanner
 import com.posadvertise.util.POSAdvertiseUtility
 import com.posadvertise.util.common.AdvertiseModel
@@ -64,9 +65,12 @@ class AppApplication : TrackingApplication() {
         item?.let {
             when (it.actionType) {
                 ActionType.FORM.value -> {
-                    FormBuilder.getInstance().openDynamicFormActivity(this, it.id, it.actionText, object : FormResponse.FormSubmitListener{
-                        override fun onFormSubmitted(status: Boolean?) {
+                    FormBuilder.getInstance().openDynamicFormActivity(this, it.actionText, object : FormResponse.FormSubmitListener{
+                        override fun onFormSubmitted(activity: Context?, status: Boolean?) {
                             logBanner("onFormSubmitted")
+                            if (!status!!) {
+                                FBAlertUtil.showSuccessDialog(context, PopupEntity("Campaign Already Submitted."))
+                            }
                         }
                     })
                 }

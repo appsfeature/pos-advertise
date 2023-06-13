@@ -13,5 +13,6 @@
 
     <color name="colorBannerDots">#99cccccc</color>
     <color name="colorBannerDotsFilled">#9a9a9a</color>
+    <color name="text_color_menu">#00315F</color>
 
 </resources>

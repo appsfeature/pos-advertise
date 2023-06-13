@@ -13,6 +13,7 @@ data class ExtraProperty(
     var bannerType: BannerType = BannerType.Both, //show downloaded banner if available else show locally.
     var viewType: BannerViewType = BannerViewType.ALL,
     var model: AdvertiseModel? = null,
-) : Parcelable {
+    var isBannerIndicatorTop: Boolean = false,
+    ) : Parcelable {
     constructor(mModel: AdvertiseModel) : this(model = mModel)
 }

@@ -1,5 +1,6 @@
 package com.helper.callback
 
+import android.animation.Animator
 import android.view.View
 
 interface Response {
@@ -29,5 +30,10 @@ interface Response {
     interface Progress {
         fun onStartProgressBar()
         fun onStopProgressBar()
+    }
+
+    interface AnimatorListener {
+        fun onAnimationStart(animator: Animator)
+        fun onAnimationEnd(animator : Animator);
     }
 }

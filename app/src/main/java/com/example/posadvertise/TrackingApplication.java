@@ -15,7 +15,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentOnAttachListener;
 
-import com.posadvertise.screensaver.util.UserInteractionCallback;
 import com.posadvertise.util.POSAdvertiseApplication;
 
 import org.jetbrains.annotations.NotNull;
@@ -59,12 +58,7 @@ public abstract class TrackingApplication extends POSAdvertiseApplication implem
                 Log.d(TAG, "-------------------------------------------------");
                 getPreviousCallingActivity(activity);
                 Log.d(TAG, activity.getClass().getSimpleName());
-                activity.getWindow().setCallback(new UserInteractionCallback(activity, new UserInteractionCallback.UserInteraction() {
-                    @Override
-                    public void onUserInteraction() {
 
-                    }
-                }));
                 FragmentManager fm = ((AppCompatActivity) activity).getSupportFragmentManager();
                 fm.addFragmentOnAttachListener(new FragmentOnAttachListener() {
                     @Override

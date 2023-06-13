@@ -2,7 +2,6 @@ package com.posadvertise.screensaver.view
 
 import android.content.Context
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.helper.util.WakeLockHandler
 import com.posadvertise.POSAdvertise
@@ -12,6 +11,7 @@ import com.posadvertise.databinding.AdvActivityScreenSaverBinding
 import com.posadvertise.screensaver.POSScreenSaver
 import com.posadvertise.screensaver.logSS
 import com.posadvertise.screensaver.util.ScreenSaverUtil
+import com.posadvertise.util.POSAdvertiseUtility
 import com.posadvertise.util.common.POSBaseActivity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -39,6 +39,8 @@ class ScreenSaverActivity : POSBaseActivity() {
                 attachFragment()
             }
         })
+
+        POSAdvertiseUtility.hideKeyboard(this)
     }
 
     private fun attachFragment() {
@@ -74,7 +76,7 @@ class ScreenSaverActivity : POSBaseActivity() {
     }
 
     override fun onDestroy() {
-        POSScreenSaver.reSetScreenSaver(applicationContext)
+        POSScreenSaver.resetScreenTimeout(applicationContext)
         logSS("ScreenSaver Stopped")
 //        autoSlider?.destroySlider()
         POSAdvertise.unregisterUIUpdateCallbacks(this@ScreenSaverActivity.hashCode())
