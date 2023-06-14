@@ -111,12 +111,18 @@ class AppApplication : POSAdvertiseApplication() {
 
 ### ScreenSaver usage methods
 ```kotlin
+
+class DashboardFragment : Fragment() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        //Start screen saver for current fragment
+        POSScreenSaver.startScreenSaver(this)
+    } 
+}
 class MainActivity : AppCompatActivity() , POSAdvertiseCallback.OnAdvertiseListener{ 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //Start screen saver for current activity or fragment
-        POSScreenSaver.startScreenSaver(this)
         
         //Download Zip file from https server
         downloadFiles(AppApplication.fileUrlAll)
