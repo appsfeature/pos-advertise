@@ -153,105 +153,118 @@ fieldList.validation : There are following Input field validations mentioned bel
 ### Campaign Json
 ```
 {
+  "formButtonText": "Submit",
   "campId": 1,
   "campName": "Campaign-001",
-  "title": "Bonushub Campaign",
-  "subTitle": "Create all fields dynamic by json or Model structure.",
-  "isShowActionbar": false,
-  "buttonText": "Submit",
-  "popup": {
-    "buttonText": "Continue",
-    "description": "You will get your updates soon",
-    "title": "Thank You!"
-  },
   "fieldList": [
     {
+      "fieldData": "",
       "fieldName": "Name",
-      "fieldType": 1,
+      "fieldSuggestions": "",
+      "fieldType": "edit_text",
       "inputType": "textCapWords",
       "isSpinnerSelectTitle": false,
       "maxLength": 0,
       "paramKey": "name",
-      "validation": "empty"
+      "validation": ""
     },
     {
-      "fieldData": "[{\"id\":1,\"title\":\"Delhi\"},{\"id\":2,\"title\":\"Noida\"},{\"id\":3,\"title\":\"Gurugram\"},{\"id\":4,\"title\":\"Faridabad\"}]",
+      "fieldData": "[{\"id\":0,\"title\":\"Delhi\"},{\"id\":1,\"title\":\"Noida\"},{\"id\":2,\"title\":\"Gurugram\"},{\"id\":3,\"title\":\"Haryana\"},{\"id\":4,\"title\":\"Faridabad\"}]",
       "fieldName": "Select State",
-      "fieldType": 2,
+      "fieldSuggestions": "",
+      "fieldType": "spinner",
       "inputType": "text",
-      "isSpinnerSelectTitle": true,
+      "isSpinnerSelectTitle": false,
       "maxLength": 0,
-      "paramKey": "steam",
-      "validation": "spinner"
+      "paramKey": "state",
+      "validation": ""
     },
     {
-      "fieldData": "[\"Male\",\"Female\",\"Trans\"]",
+      "fieldData": "[{\"id\":0,\"title\":\"Male\"},{\"id\":1,\"title\":\"Female\"}]",
       "fieldName": "Select Gender",
-      "fieldType": 3,
+      "fieldSuggestions": "",
+      "fieldType": "radio",
       "inputType": "text",
       "isSpinnerSelectTitle": false,
       "maxLength": 0,
       "paramKey": "gender",
-      "validation": "radio"
-    },
-    {
-      "fieldData": "Select Date",
-      "fieldName": "Date of Birth",
-      "fieldType": 5,
-      "inputType": "text",
-      "isSpinnerSelectTitle": false,
-      "maxLength": 0,
-      "paramKey": "dob",
-      "validation": "date"
-    },
-    {
-      "fieldName": "Personal Detail",
-      "fieldType": 0,
-      "inputType": "text",
-      "isSpinnerSelectTitle": false,
-      "maxLength": 0,
-      "paramKey": "personal_detail",
       "validation": ""
     },
     {
-      "fieldName": "Mobile No",
-      "fieldSuggestions": "[\"9891983694\"]",
-      "fieldType": 1,
-      "inputType": "phone",
+      "fieldData": "",
+      "fieldName": "Select Date ",
+      "fieldSuggestions": "",
+      "fieldType": "date_picker",
+      "inputType": "text",
       "isSpinnerSelectTitle": false,
-      "maxLength": 10,
-      "paramKey": "mobile",
-      "validation": "mobile"
+      "maxLength": 0,
+      "paramKey": "date",
+      "validation": ""
     },
     {
-      "fieldName": "Email Id",
-      "fieldSuggestions": "[\"@gmail.com\", \"@yahoo.com\", \"@hotmail.com\", \"@outlook.com\"]",
-      "fieldType": 1,
+      "fieldData": "",
+      "fieldName": "Personal Details ",
+      "fieldSuggestions": "",
+      "fieldType": "text_view",
+      "inputType": "text",
+      "isSpinnerSelectTitle": false,
+      "maxLength": 0,
+      "paramKey": "",
+      "validation": ""
+    },
+    {
+      "fieldData": "",
+      "fieldName": "Mobile No",
+      "fieldSuggestions": "",
+      "fieldType": "edit_text",
+      "inputType": "numberSigned",
+      "isSpinnerSelectTitle": false,
+      "maxLength": 0,
+      "paramKey": "mobile",
+      "validation": ""
+    },
+    {
+      "fieldData": "",
+      "fieldName": "Email ID ",
+      "fieldSuggestions": "[\"@gmail.com\",\"@yahoo.com\"]",
+      "fieldType": "edit_text",
       "inputType": "textEmailAddress",
       "isSpinnerSelectTitle": false,
       "maxLength": 0,
       "paramKey": "email",
-      "validation": "email"
-    },
-    {
-      "fieldName": "Address",
-      "fieldType": 1,
-      "inputType": "textMultiLine",
-      "isSpinnerSelectTitle": false,
-      "maxLength": 0,
-      "paramKey": "address",
       "validation": ""
     },
     {
-      "fieldName": "Subscribe for news updates",
-      "fieldType": 4,
+      "fieldData": "",
+      "fieldName": "Address ",
+      "fieldSuggestions": "",
+      "fieldType": "edit_text",
+      "inputType": "textMultiLine",
+      "isSpinnerSelectTitle": false,
+      "maxLength": 0,
+      "paramKey": "address ",
+      "validation": ""
+    },
+    {
+      "fieldData": "",
+      "fieldName": "Checked to continue.",
+      "fieldSuggestions": "",
+      "fieldType": "check_box",
       "inputType": "text",
       "isSpinnerSelectTitle": false,
       "maxLength": 0,
       "paramKey": "agree",
       "validation": "check_box"
     }
-  ]
+  ],
+  "isShowActionbar": false,
+  "popup": {
+    "buttonText": "Continue",
+    "description": "You will get your updates soon",
+    "title": "Thank You!"
+  },
+  "subTitle": "Create all fields dynamic by json or model structure ",
+  "title": "BonusHub Campaign "
 }
 ```
 
