@@ -25,6 +25,236 @@ dependencies {
 }
 ```
 
+### Docs for create config json file.
+
+### POSAdvertise.zip file contains
+```
+Banner
+ScreenSaver
+Tutorial
+config.json
+```
+### config.json
+```
+bannerVersion : zip file release version (revision id).
+```
+### config_banner.json
+```
+bannerAttachDelayTime : time to apper on the screen.
+bannerTransitionTimeInSec : Transition time for each banners.
+list.startDate : When to start showing banner.
+list.endDate : When to stop showing banner.
+list.ranking : For sorting banner list.
+list.fileName : Filename of image stored in Banner Folder.
+list.showIn : Showing on the following screens seperated by comma like (home,void)
+     = all,
+     = home,
+     = emi_sale,
+     = brand_emi,
+     = void,
+     = dynamic_qr,
+list.actionType : Perform following actions when click banner. i.e We have to pass actionType = 1001 for opening an campaign 
+     = DYNAMIC_FORM - 1001
+     = SALE - 100
+     = BANK_EMI - 110
+     = BRAND_EMI - 120
+     = EMI_CATALOGUE - 130
+     = CROSS_SELL - 140
+     = FLEXY_PAY - 150
+     = MERCHANT_PROMO - 160
+     = MERCHANT_REFERRAL - 170
+     = DIGI_POS - 180
+     = BHARAT_QR - 190
+     = SALE_WITH_CASH - 200
+     = SALE_TIP - 210
+     = CASH_ADVANCE - 220
+     = VOID_SALE - 230
+     = VOID_REFUND - 240
+     = REFUND - 250
+     = PRE_AUTH_CATAGORY - 260
+     = PREAUTH - 270
+     = PREAUTH_COMPLETE - 280
+     = VOID_PREAUTH - 290
+     = PENDING_PREAUTH - 300
+     = EMI_ENQUIRY - 310
+     = EMI_PRO - 320
+     = BONUS_PROMO - 330
+    
+list.actionText : Pass campaign config json data when open an campaign.
+```
+### config_screen_saver.json
+```
+screenTimeOut : Start ScreenSaver after mentioned time in milliseconds.
+transitionTime : Transition time for each Screen Saver.
+isEnableShowWhenChargerConnected : if true than only show when charger connected.
+isEnableStaticQRCode : Integrate in future Update.
+list.startDate : When to start showing banner.
+list.endDate : When to stop showing banner.
+list.ranking : For sorting banner list.
+list.fileName : Filename of image stored in ScreenSaver Folder.
+```
+### config_tutorial.json
+```
+isEnable : Enable or disable this feature.
+list.ranking : For sorting banner list.
+list.title : Tutorial Title.
+list.fileName : Filename of image stored in ScreenSaver Folder.
+```
+### Campaign Form Json Doc
+```
+campId : Campaign Unique ID.
+campName : Campaign Name.
+title : Title shown in Action Bar
+subTitle : SubTitle shown in below Action Bar
+buttonText : Campaign Submit Button Text.
+popup : After Campaign Submit Popup.
+
+fieldList.fieldName : User Input Field Name.
+fieldList.maxLength : Edittext input max digit.
+fieldList.paramKey : Field value sent to the server with this key.
+
+fieldList.fieldType : There are following Input types for EditText mentioned below.
+     = text
+     = number
+     = textPersonName
+     = textEmailAddress
+     = numberSigned
+     = phone
+     = textMultiLine
+     = textCapWords         i.e. Hello World
+     = textCapCharacters    i.e. HELLO WORLD
+    
+fieldList.inputType : There are following Input field types mentioned below.
+     = text_view
+     = edit_text
+     = spinner
+     = radio
+     = check_box
+     = date_picker
+     = empty
+    
+fieldList.validation : There are following Input field validations mentioned below (Note: If no value pass than no validation check is apply.)
+     = empty
+     = email
+     = mobile
+     = gst_number
+     = pin_code
+     = ifsc_code
+     = alpha_numeric
+     = spinner
+     = check_box
+     = date
+     = radio
+     
+ fieldList.fieldData : Field data is used for Spinner(DropDown), RadioButtons, Pass Json Array of List as String. 
+
+
+```
+### Campaign Json
+```
+{
+  "campId": 1,
+  "campName": "Campaign-001",
+  "title": "Bonushub Campaign",
+  "subTitle": "Create all fields dynamic by json or Model structure.",
+  "isShowActionbar": false,
+  "buttonText": "Submit",
+  "popup": {
+    "buttonText": "Continue",
+    "description": "You will get your updates soon",
+    "title": "Thank You!"
+  },
+  "fieldList": [
+    {
+      "fieldName": "Name",
+      "fieldType": 1,
+      "inputType": "textCapWords",
+      "isSpinnerSelectTitle": false,
+      "maxLength": 0,
+      "paramKey": "name",
+      "validation": "empty"
+    },
+    {
+      "fieldData": "[{\"id\":1,\"title\":\"Delhi\"},{\"id\":2,\"title\":\"Noida\"},{\"id\":3,\"title\":\"Gurugram\"},{\"id\":4,\"title\":\"Faridabad\"}]",
+      "fieldName": "Select State",
+      "fieldType": 2,
+      "inputType": "text",
+      "isSpinnerSelectTitle": true,
+      "maxLength": 0,
+      "paramKey": "steam",
+      "validation": "spinner"
+    },
+    {
+      "fieldData": "[\"Male\",\"Female\",\"Trans\"]",
+      "fieldName": "Select Gender",
+      "fieldType": 3,
+      "inputType": "text",
+      "isSpinnerSelectTitle": false,
+      "maxLength": 0,
+      "paramKey": "gender",
+      "validation": "radio"
+    },
+    {
+      "fieldData": "Select Date",
+      "fieldName": "Date of Birth",
+      "fieldType": 5,
+      "inputType": "text",
+      "isSpinnerSelectTitle": false,
+      "maxLength": 0,
+      "paramKey": "dob",
+      "validation": "date"
+    },
+    {
+      "fieldName": "Personal Detail",
+      "fieldType": 0,
+      "inputType": "text",
+      "isSpinnerSelectTitle": false,
+      "maxLength": 0,
+      "paramKey": "personal_detail",
+      "validation": ""
+    },
+    {
+      "fieldName": "Mobile No",
+      "fieldSuggestions": "[\"9891983694\"]",
+      "fieldType": 1,
+      "inputType": "phone",
+      "isSpinnerSelectTitle": false,
+      "maxLength": 10,
+      "paramKey": "mobile",
+      "validation": "mobile"
+    },
+    {
+      "fieldName": "Email Id",
+      "fieldSuggestions": "[\"@gmail.com\", \"@yahoo.com\", \"@hotmail.com\", \"@outlook.com\"]",
+      "fieldType": 1,
+      "inputType": "textEmailAddress",
+      "isSpinnerSelectTitle": false,
+      "maxLength": 0,
+      "paramKey": "email",
+      "validation": "email"
+    },
+    {
+      "fieldName": "Address",
+      "fieldType": 1,
+      "inputType": "textMultiLine",
+      "isSpinnerSelectTitle": false,
+      "maxLength": 0,
+      "paramKey": "address",
+      "validation": ""
+    },
+    {
+      "fieldName": "Subscribe for news updates",
+      "fieldType": 4,
+      "inputType": "text",
+      "isSpinnerSelectTitle": false,
+      "maxLength": 0,
+      "paramKey": "agree",
+      "validation": "check_box"
+    }
+  ]
+}
+```
+
 ### Usage methods
 
 ### Changes in layout.xml file
