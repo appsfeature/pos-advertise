@@ -24,6 +24,10 @@ class AppApplication : TrackingApplication() {
         lateinit var instance : AppApplication
     }
 
+    override fun getVersionName(): String {
+        return BuildConfig.VERSION_NAME
+    }
+
 
     override fun isDebugMode(): Boolean {
         return BuildConfig.DEBUG

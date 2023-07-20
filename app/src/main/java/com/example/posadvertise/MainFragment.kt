@@ -67,7 +67,7 @@ class MainFragment : Fragment() {
     }
 
     private fun showBanner() {
-        AppApplication.instance.getPosAdvertise().showBannerOnHomeScreen(this, R.id.container_banner)
+        AppApplication.instance.getPosAdvertise().showBannerOnHomeScreen(this, binding.containerBanner)
     }
 
     private fun showProgress(visible: Int) {
